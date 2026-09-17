@@ -753,8 +753,87 @@
 	}
 
 	function closeModal() {
+		if ( galleryCleanup ) {
+			galleryCleanup();
+			galleryCleanup = null;
+		}
 		state.modalRoom = null;
 		render();
+	}
+
+	var GALLERY_AUTOPLAY_MS = 5000;
+	var galleryCleanup = null;
+
+	function gallerySlideshow( images, altText ) {
+		if ( galleryCleanup ) {
+			galleryCleanup();
+			galleryCleanup = null;
+		}
+
+		var container = el( 'div', { class: 'p20-rf__modal-gallery' } );
+		var index = 0;
+		var timer = null;
+
+		function stopAutoplay() {
+			if ( timer ) {
+				clearInterval( timer );
+				timer = null;
+			}
+		}
+
+		function startAutoplay() {
+			stopAutoplay();
+			if ( images.length > 1 ) {
+				timer = setInterval( function () {
+					goTo( ( index + 1 ) % images.length );
+				}, GALLERY_AUTOPLAY_MS );
+			}
+		}
+
+		function goTo( i ) {
+			index = i;
+			draw();
+		}
+
+		function draw() {
+			container.innerHTML = '';
+			container.appendChild( el( 'img', { src: images[ index ], alt: altText } ) );
+
+			if ( images.length > 1 ) {
+				container.appendChild( el( 'button', {
+					type: 'button',
+					class: 'p20-rf__gallery-nav p20-rf__gallery-nav--prev',
+					'aria-label': 'Vorheriges Bild',
+					onclick: function () { stopAutoplay(); goTo( ( index - 1 + images.length ) % images.length ); startAutoplay(); },
+				}, [ '‹' ] ) );
+				container.appendChild( el( 'button', {
+					type: 'button',
+					class: 'p20-rf__gallery-nav p20-rf__gallery-nav--next',
+					'aria-label': 'Nächstes Bild',
+					onclick: function () { stopAutoplay(); goTo( ( index + 1 ) % images.length ); startAutoplay(); },
+				}, [ '›' ] ) );
+
+				var dots = el( 'div', { class: 'p20-rf__gallery-dots' } );
+				images.forEach( function ( _, i ) {
+					dots.appendChild( el( 'button', {
+						type: 'button',
+						class: 'p20-rf__gallery-dot' + ( i === index ? ' is-active' : '' ),
+						'aria-label': 'Bild ' + ( i + 1 ) + ' von ' + images.length,
+						onclick: function () { stopAutoplay(); goTo( i ); startAutoplay(); },
+					} ) );
+				} );
+				container.appendChild( dots );
+				container.appendChild( el( 'span', { class: 'p20-rf__gallery-count' }, [ ( index + 1 ) + ' / ' + images.length ] ) );
+			}
+		}
+
+		draw();
+		startAutoplay();
+		container.addEventListener( 'mouseenter', stopAutoplay );
+		container.addEventListener( 'mouseleave', startAutoplay );
+		galleryCleanup = stopAutoplay;
+
+		return container;
 	}
 
 	function renderModal() {
@@ -784,9 +863,7 @@
 		var overlay = el( 'div', { class: 'p20-rf__overlay', onclick: closeModal } );
 		var modal = el( 'div', { class: 'p20-rf__modal' }, [
 			el( 'button', { class: 'p20-rf__modal-close', 'aria-label': 'Schließen', onclick: closeModal }, [ '✕' ] ),
-			gallery.length ? el( 'div', { class: 'p20-rf__modal-gallery' }, gallery.map( function ( src ) {
-				return el( 'img', { src: src, alt: room.name } );
-			} ) ) : null,
+			gallery.length ? gallerySlideshow( gallery, room.name ) : null,
 			el( 'div', { class: 'p20-rf__modal-body' }, [
 				el( 'h2', { class: 'p20-rf__room-name', style: 'font-size:26px' }, [ room.name ] ),
 				el( 'p', { class: 'p20-rf__room-meta' }, [ [ room.size_sqm ? room.size_sqm + ' m²' : '', room.capacity_max ? 'bis ' + room.capacity_max + ' Personen' : '' ].filter( Boolean ).join( ' · ' ) ] ),
