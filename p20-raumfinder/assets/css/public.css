@@ -41,7 +41,6 @@
 	appearance: none;
 	-webkit-appearance: none;
 	background: none;
-	border: none;
 	color: inherit;
 	font: inherit;
 	line-height: inherit;
@@ -236,7 +235,7 @@
 	letter-spacing: 0.01em;
 	padding: 15px 28px;
 	border-radius: var(--p20-radius-s);
-	border: 1px solid transparent;
+	border: 1px solid transparent !important;
 	cursor: pointer;
 	transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
 	text-decoration: none;
@@ -356,7 +355,7 @@
 	height: 56px;
 	flex: 0 0 56px;
 	border-radius: 50%;
-	border: 1px solid var(--p20-border);
+	border: 1px solid var(--p20-border) !important;
 	background: var(--p20-cream) !important;
 	font-size: 24px;
 	line-height: 1;
@@ -368,7 +367,7 @@
 	padding: 0;
 	transition: background-color 0.2s, border-color 0.2s;
 }
-.p20-rf__stepper-btn:hover { background: var(--p20-beige) !important; border-color: var(--p20-green); }
+.p20-rf__stepper-btn:hover { background: var(--p20-beige) !important; border-color: var(--p20-green) !important; }
 .p20-rf__stepper-value {
 	font-family: inherit;
 	font-size: 56px;
@@ -404,7 +403,7 @@
 .p20-rf__quick-values button {
 	padding: 8px 18px;
 	border-radius: 999px;
-	border: 1px solid var(--p20-border);
+	border: 1px solid var(--p20-border) !important;
 	background: transparent !important;
 	cursor: pointer;
 	font-size: 14px;
@@ -414,7 +413,7 @@
 .p20-rf__quick-values button.is-active,
 .p20-rf__quick-values button:hover {
 	background: var(--p20-green) !important;
-	border-color: var(--p20-green);
+	border-color: var(--p20-green) !important;
 	color: #fff !important;
 }
 
@@ -426,7 +425,7 @@
 }
 .p20-rf__card {
 	position: relative;
-	border: 1px solid var(--p20-border);
+	border: 1px solid var(--p20-border) !important;
 	background: var(--p20-cream) !important;
 	color: var(--p20-text) !important;
 	border-radius: var(--p20-radius-m);
@@ -440,12 +439,12 @@
 	min-height: 120px;
 }
 .p20-rf__card:hover {
-	border-color: var(--p20-green);
+	border-color: var(--p20-green) !important;
 	box-shadow: var(--p20-shadow);
 	transform: translateY(-2px);
 }
 .p20-rf__card.is-selected {
-	border-color: var(--p20-green);
+	border-color: var(--p20-green) !important;
 	background: var(--p20-beige) !important;
 	box-shadow: 0 0 0 1px var(--p20-green);
 }
@@ -513,7 +512,7 @@
 	display: flex;
 	align-items: center;
 	gap: 14px;
-	border: 1px solid var(--p20-border);
+	border: 1px solid var(--p20-border) !important;
 	background: var(--p20-cream) !important;
 	color: var(--p20-text) !important;
 	border-radius: var(--p20-radius-m);
@@ -521,16 +520,16 @@
 	cursor: pointer;
 	transition: all 0.2s;
 }
-.p20-rf__toggle:hover { border-color: var(--p20-green); box-shadow: var(--p20-shadow); }
+.p20-rf__toggle:hover { border-color: var(--p20-green) !important; box-shadow: var(--p20-shadow); }
 .p20-rf__toggle.is-selected {
-	border-color: var(--p20-green);
+	border-color: var(--p20-green) !important;
 	background: var(--p20-beige) !important;
 }
 .p20-rf__toggle-box {
 	width: 22px;
 	height: 22px;
 	border-radius: 4px;
-	border: 1px solid var(--p20-border);
+	border: 1px solid var(--p20-border) !important;
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
@@ -607,7 +606,7 @@
 	width: 44px;
 	height: 44px;
 	border-radius: 50%;
-	border: 1px solid var(--p20-border);
+	border: 1px solid var(--p20-border) !important;
 	background: var(--p20-cream) !important;
 	color: var(--p20-anthracite) !important;
 	display: flex;
@@ -619,7 +618,7 @@
 }
 .p20-rf__pager-btn:hover:not(:disabled) {
 	background: var(--p20-beige) !important;
-	border-color: var(--p20-green);
+	border-color: var(--p20-green) !important;
 }
 .p20-rf__pager-btn:disabled {
 	opacity: 0.3;
@@ -678,12 +677,16 @@
 	font-family: var(--p20-font-headline);
 	font-size: 18px;
 	font-weight: 600;
-	color: var(--p20-anthracite);
+	color: var(--p20-anthracite) !important;
 	margin: 0;
+}
+.p20-rf__room-card:hover .p20-rf__room-name,
+.p20-rf__room-name:hover {
+	color: var(--p20-anthracite) !important;
 }
 .p20-rf__room-meta {
 	font-size: 12px;
-	color: var(--p20-text-muted);
+	color: var(--p20-text-muted) !important;
 }
 .p20-rf__room-stats {
 	display: grid;
@@ -702,17 +705,17 @@
 	font-size: 10px;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--p20-text-muted);
+	color: var(--p20-text-muted) !important;
 }
 .p20-rf__stat-value {
 	font-size: 12.5px;
 	font-weight: 600;
-	color: var(--p20-anthracite);
+	color: var(--p20-anthracite) !important;
 	line-height: 1.25;
 }
 .p20-rf__room-desc {
 	font-size: 12.5px;
-	color: var(--p20-text);
+	color: var(--p20-text) !important;
 	margin: 0;
 }
 .p20-rf__room-tags {
@@ -724,6 +727,7 @@
 	gap: 3px;
 	font-size: 12px;
 }
+.p20-rf__room-tags li { color: var(--p20-text) !important; }
 .p20-rf__room-tags li::before { content: "✓ "; color: var(--p20-green); font-weight: 700; }
 .p20-rf__room-price {
 	font-size: 14px;
@@ -735,7 +739,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	margin-top: 4px;
+	margin-top: auto;
+	padding-top: 8px;
 }
 .p20-rf__room-actions .p20-rf-btn { flex: 1; padding: 9px 12px; font-size: 12.5px; }
 
