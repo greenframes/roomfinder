@@ -34,6 +34,7 @@
 		requestRoom: null,
 		submitting: false,
 		submitError: '',
+		loadError: '',
 	};
 
 	function el( tag, attrs, children ) {
@@ -58,21 +59,49 @@
 		return node;
 	}
 
-	function apiGet( path ) {
-		return fetch( cfg.restUrl + path, {
-			headers: { 'X-WP-Nonce': cfg.nonce },
-		} ).then( function ( r ) {
-			return r.json();
+	function parseJsonSafely( r ) {
+		return r.text().then( function ( text ) {
+			var data = null;
+			try {
+				data = text ? JSON.parse( text ) : null;
+			} catch ( e ) {
+				data = null;
+			}
+			if ( ! r.ok || null === data ) {
+				var err = new Error( 'p20_rf_http_' + r.status );
+				err.status = r.status;
+				err.data = data;
+				throw err;
+			}
+			return data;
 		} );
 	}
 
+	function apiGet( path ) {
+		if ( ! cfg.restUrl ) {
+			return Promise.reject( new Error( 'p20_rf_no_config' ) );
+		}
+		return fetch( cfg.restUrl + path, {
+			headers: { 'X-WP-Nonce': cfg.nonce },
+		} ).then( parseJsonSafely );
+	}
+
 	function apiPost( path, body ) {
+		if ( ! cfg.restUrl ) {
+			return Promise.reject( new Error( 'p20_rf_no_config' ) );
+		}
 		return fetch( cfg.restUrl + path, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
 			body: JSON.stringify( body ),
 		} ).then( function ( r ) {
-			return r.json().then( function ( data ) {
+			return r.text().then( function ( text ) {
+				var data = null;
+				try {
+					data = text ? JSON.parse( text ) : null;
+				} catch ( e ) {
+					data = null;
+				}
 				return { ok: r.ok, data: data };
 			} );
 		} );
@@ -188,6 +217,10 @@
 			root.appendChild( renderLogoLoader() );
 			return;
 		}
+		if ( 'error' === state.view ) {
+			root.appendChild( renderError() );
+			return;
+		}
 		if ( 'start' === state.view ) {
 			root.appendChild( renderStart() );
 		} else if ( 'wizard' === state.view ) {
@@ -199,6 +232,20 @@
 			root.appendChild( renderModal() );
 		}
 		window.scrollTo( { top: root.getBoundingClientRect().top + window.scrollY - 40, behavior: 'smooth' } );
+	}
+
+	function renderError() {
+		return el( 'div', { class: 'p20-rf__empty' }, [
+			el( 'span', { class: 'p20-rf__kicker' }, [ 'Kurze Verzögerung' ] ),
+			el( 'h2', { class: 'p20-rf__headline' }, [ 'Der Raumfinder konnte nicht geladen werden.' ] ),
+			el( 'p', { class: 'p20-rf__subline', style: 'margin-left:auto;margin-right:auto' }, [ state.loadError || 'Bitte versuchen Sie es erneut, oder kontaktieren Sie uns direkt, falls das Problem bestehen bleibt.' ] ),
+			el( 'button', { class: 'p20-rf-btn p20-rf-btn--primary', onclick: function () {
+				state.view = 'loading';
+				state.loadError = '';
+				render();
+				init();
+			} }, [ 'Erneut versuchen' ] ),
+		] );
 	}
 
 	function renderStart() {
@@ -491,7 +538,17 @@
 		state.matchResult = null;
 		render();
 		withMinDelay( apiPost( '/match', body ), MIN_LOADER_MS_SHORT ).then( function ( res ) {
+			if ( ! res.ok || ! res.data ) {
+				state.view = 'error';
+				state.loadError = 'Die Suche konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.';
+				render();
+				return;
+			}
 			state.matchResult = res.data;
+			render();
+		} ).catch( function () {
+			state.view = 'error';
+			state.loadError = 'Die Suche konnte nicht durchgeführt werden. Bitte versuchen Sie es erneut.';
 			render();
 		} );
 	}
@@ -782,6 +839,12 @@
 		withMinDelay( apiGet( '/config' ), MIN_LOADER_MS ).then( function ( data ) {
 			state.remote = data;
 			state.view = 'start';
+			render();
+		} ).catch( function ( err ) {
+			state.view = 'error';
+			state.loadError = err && 403 === err.status
+				? 'Die Verbindung zur Raumfinder-Schnittstelle wurde blockiert (403). Bitte prüfen Sie Sicherheits- oder Cache-Plugins.'
+				: 'Der Raumfinder konnte nicht geladen werden. Bitte laden Sie die Seite neu.';
 			render();
 		} );
 	}
