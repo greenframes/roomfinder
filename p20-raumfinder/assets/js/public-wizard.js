@@ -36,6 +36,7 @@
 		submitError: '',
 		loadError: '',
 		resultsPage: 0,
+		requestDraft: {},
 	};
 
 	function el( tag, attrs, children ) {
@@ -918,11 +919,19 @@
 		if ( state.seating_label ) { chips.push( state.seating_label ); }
 		wrap.appendChild( el( 'div', { class: 'p20-rf__summary-chips' }, chips.map( function ( c ) { return el( 'span', {}, [ c ] ); } ) ) );
 
+		// Restores whatever the visitor already typed if the form has to be
+		// re-rendered (e.g. after a validation error) so nothing gets lost.
 		var fields = {};
 		function field( id, label, type, required, full ) {
 			var input = 'textarea' === type
 				? el( 'textarea', { id: id, name: id, rows: '4' } )
 				: el( 'input', { id: id, name: id, type: type } );
+			if ( state.requestDraft[ id ] ) {
+				input.value = state.requestDraft[ id ];
+			}
+			input.addEventListener( 'input', function () {
+				state.requestDraft[ id ] = input.value;
+			} );
 			fields[ id ] = input;
 			return el( 'div', { class: 'p20-rf__field' + ( full ? ' p20-rf__field--full' : '' ) }, [
 				el( 'label', { for: id }, [ label + ( required ? ' *' : '' ) ] ),
@@ -945,6 +954,12 @@
 
 		var settings = ( state.remote && state.remote.settings ) || {};
 		var consentInput = el( 'input', { type: 'checkbox', id: 'consent' } );
+		if ( state.requestDraft.consent ) {
+			consentInput.checked = true;
+		}
+		consentInput.addEventListener( 'change', function () {
+			state.requestDraft.consent = consentInput.checked;
+		} );
 		var privacyLabel = [ settings.privacy_text || 'Ich habe die Datenschutzerklärung gelesen und bin einverstanden.' ];
 		var consentLabel = el( 'label', { for: 'consent' }, privacyLabel );
 		var consent = el( 'div', { class: 'p20-rf__field-consent' }, [ consentInput, consentLabel ] );
@@ -1011,6 +1026,7 @@
 			state.submitting = false;
 			if ( res.ok && res.data && res.data.success ) {
 				state.view = 'success';
+				state.requestDraft = {};
 				renderRequestView();
 			} else {
 				state.submitError = ( res.data && res.data.message ) || 'Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.';

@@ -54,13 +54,27 @@
 	box-shadow: none !important;
 	text-decoration: none;
 }
-.p20-rf input,
+.p20-rf input:not([type="checkbox"]):not([type="radio"]),
 .p20-rf textarea,
 .p20-rf select {
 	appearance: none;
 	-webkit-appearance: none;
 	font: inherit;
 	color: inherit;
+	box-shadow: none !important;
+}
+/* Checkboxes/radios keep native appearance (so they're always visibly a
+   checkbox), just re-tinted to the brand green instead of the browser
+   default blue. */
+.p20-rf input[type="checkbox"],
+.p20-rf input[type="radio"] {
+	appearance: auto !important;
+	-webkit-appearance: auto !important;
+	accent-color: var(--p20-green);
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	margin: 0;
 	box-shadow: none !important;
 }
 
