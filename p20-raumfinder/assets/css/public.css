@@ -465,6 +465,8 @@
 	font-weight: 600;
 	font-size: 15px;
 	color: var(--p20-anthracite) !important;
+	overflow-wrap: break-word;
+	word-break: break-word;
 }
 .p20-rf__card-check {
 	position: absolute;
@@ -541,7 +543,21 @@
 	border-color: var(--p20-green);
 	color: #fff !important;
 }
-.p20-rf__toggle-label { font-weight: 500; font-size: 15px; color: var(--p20-text) !important; }
+.p20-rf__toggle-label {
+	font-weight: 500;
+	font-size: 15px;
+	color: var(--p20-text) !important;
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+.p20-rf .p20-rf__toggle:hover .p20-rf__toggle-label,
+.p20-rf .p20-rf__toggle-label:hover,
+.p20-rf .p20-rf__card:hover .p20-rf__card-label,
+.p20-rf .p20-rf__card-label:hover {
+	color: var(--p20-text) !important;
+}
 
 .p20-rf__note {
 	font-size: 13px;
