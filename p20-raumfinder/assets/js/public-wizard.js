@@ -35,6 +35,7 @@
 		submitting: false,
 		submitError: '',
 		loadError: '',
+		resultsPage: 0,
 	};
 
 	function el( tag, attrs, children ) {
@@ -183,19 +184,38 @@
 		return panel;
 	}
 
+	var SVG_OPEN = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">';
+	var SVG_CLOSE = '</svg>';
+
 	var ICONS = {
-		meeting: '&#9679;&#9679;',
-		seminar: '&#9723;',
-		workshop: '&#9670;',
-		schulung: '&#9650;',
-		vortrag: '&#9737;',
-		tagung: '&#9632;',
-		konferenz: '&#9635;',
-		sonstiges: '&#8230;',
+		// Meeting — two people
+		meeting: SVG_OPEN + '<circle cx="8.5" cy="7.5" r="2.5"/><circle cx="16" cy="9" r="2"/><path d="M3.5,20 C3.5,15.5 6,13.5 8.5,13.5 C11,13.5 13.5,15.5 13.5,20"/><path d="M14.5,20 C14.5,16.7 16,15 18,15 C20,15 21.5,16.7 21.5,20"/>' + SVG_CLOSE,
+		// Besprechung — speech bubble
+		besprechung: SVG_OPEN + '<path d="M4,5.5 H20 V16 H10.5 L6.5,19.5 V16 H4 Z"/><path d="M8,9.5 H16 M8,12.5 H13"/>' + SVG_CLOSE,
+		// Seminar — presentation board
+		seminar: SVG_OPEN + '<rect x="3" y="4.5" width="18" height="12" rx="1"/><path d="M7,20 H17 M12,16.5 V20 M7,8.5 H13 M7,11.5 H16"/>' + SVG_CLOSE,
+		// Schulung — graduation cap
+		schulung: SVG_OPEN + '<path d="M2,9.5 L12,5 L22,9.5 L12,14 L2,9.5 Z"/><path d="M6,11.5 V16 C6,17.5 8.5,19 12,19 C15.5,19 18,17.5 18,16 V11.5"/><path d="M22,9.5 V15.5"/>' + SVG_CLOSE,
+		// Workshop — wrench
+		workshop: SVG_OPEN + '<path d="M14.5,6.5 A4,4 0 1 1 9.9,11.1 L4,17 L3,20 L6,19 L11.9,13.1 A4,4 0 0 1 14.5,6.5 Z"/>' + SVG_CLOSE,
+		// Vortrag — microphone
+		vortrag: SVG_OPEN + '<rect x="9.5" y="3" width="5" height="10" rx="2.5"/><path d="M6,11 C6,15 8.7,17.5 12,17.5 C15.3,17.5 18,15 18,11 M12,17.5 V21 M8.5,21 H15.5"/>' + SVG_CLOSE,
+		// Tagung — building
+		tagung: SVG_OPEN + '<rect x="4" y="3" width="11" height="18"/><rect x="15" y="9" width="5" height="12"/><path d="M7,6.5 H8.5 M11,6.5 H12.5 M7,10 H8.5 M11,10 H12.5 M7,13.5 H8.5 M11,13.5 H12.5 M17,12.5 H18 M17,15.5 H18"/>' + SVG_CLOSE,
+		// Konferenz — round table with people
+		konferenz: SVG_OPEN + '<circle cx="12" cy="12" r="5"/><circle cx="12" cy="3.7" r="1.6"/><circle cx="19.3" cy="8.6" r="1.6"/><circle cx="19.3" cy="15.4" r="1.6"/><circle cx="12" cy="20.3" r="1.6"/><circle cx="4.7" cy="15.4" r="1.6"/><circle cx="4.7" cy="8.6" r="1.6"/>' + SVG_CLOSE,
+		// Coaching — target
+		coaching: SVG_OPEN + '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>' + SVG_CLOSE,
+		// Event — star
+		event: SVG_OPEN + '<path d="M12,3 L14.6,9.3 L21.5,9.8 L16.2,14.2 L18,21 L12,17.2 L6,21 L7.8,14.2 L2.5,9.8 L9.4,9.3 Z"/>' + SVG_CLOSE,
+		// Hybrides Meeting — screen + signal
+		'hybrides-meeting': SVG_OPEN + '<rect x="2.5" y="5" width="15" height="10.5" rx="1"/><path d="M7,19.5 H13" /><path d="M18,8 C19.5,9.5 19.5,12 18,13.5 M20.3,5.7 C22.9,8.3 22.9,13.2 20.3,15.8"/>' + SVG_CLOSE,
+		// Sonstiges / fallback — plus
+		sonstiges: SVG_OPEN + '<circle cx="12" cy="12" r="9"/><path d="M12,8 V16 M8,12 H16"/>' + SVG_CLOSE,
 	};
 
 	function eventIcon( slug ) {
-		return ICONS[ slug ] || '&#9632;';
+		return ICONS[ slug ] || ICONS.sonstiges;
 	}
 
 	function seatingPictogram( key ) {
@@ -556,6 +576,7 @@
 	}
 
 	function runMatch() {
+		state.resultsPage = 0;
 		var body = {
 			persons: state.persons,
 			event_type: state.event_type,
@@ -589,6 +610,64 @@
 		} );
 	}
 
+	var RESULTS_PER_PAGE = 3;
+
+	function paginatedGrid( rooms, pageStateKey ) {
+		var container = el( 'div', {} );
+		var totalPages = Math.max( 1, Math.ceil( rooms.length / RESULTS_PER_PAGE ) );
+		if ( state[ pageStateKey ] >= totalPages ) {
+			state[ pageStateKey ] = totalPages - 1;
+		}
+
+		function draw() {
+			container.innerHTML = '';
+			var page = state[ pageStateKey ];
+			var start = page * RESULTS_PER_PAGE;
+			var pageRooms = rooms.slice( start, start + RESULTS_PER_PAGE );
+
+			var grid = el( 'div', { class: 'p20-rf__results-grid' } );
+			pageRooms.forEach( function ( room ) {
+				grid.appendChild( roomCard( room ) );
+			} );
+			container.appendChild( grid );
+
+			if ( totalPages > 1 ) {
+				var prevBtn = el( 'button', {
+					class: 'p20-rf__pager-btn',
+					type: 'button',
+					'aria-label': 'Vorherige Räume',
+					disabled: 0 === page ? 'disabled' : null,
+					onclick: function () {
+						state[ pageStateKey ] = Math.max( 0, state[ pageStateKey ] - 1 );
+						draw();
+					},
+				}, [ '←' ] );
+				var nextBtn = el( 'button', {
+					class: 'p20-rf__pager-btn',
+					type: 'button',
+					'aria-label': 'Weitere Räume',
+					disabled: page >= totalPages - 1 ? 'disabled' : null,
+					onclick: function () {
+						state[ pageStateKey ] = Math.min( totalPages - 1, state[ pageStateKey ] + 1 );
+						draw();
+					},
+				}, [ '→' ] );
+				var label = el( 'span', { class: 'p20-rf__pager-label' }, [ ( page + 1 ) + ' / ' + totalPages ] );
+				container.appendChild( el( 'div', { class: 'p20-rf__results-pager' }, [ prevBtn, label, nextBtn ] ) );
+			}
+		}
+
+		draw();
+		return container;
+	}
+
+	function statBlock( label, value ) {
+		return el( 'div', { class: 'p20-rf__stat' }, [
+			el( 'span', { class: 'p20-rf__stat-label' }, [ label ] ),
+			el( 'span', { class: 'p20-rf__stat-value' }, [ value || '—' ] ),
+		] );
+	}
+
 	function roomCard( room, altBadge ) {
 		var img = room.image
 			? el( 'img', { src: room.image, alt: room.name, loading: 'lazy' } )
@@ -596,7 +675,15 @@
 
 		var badge = el( 'span', { class: 'p20-rf__room-badge' + ( altBadge ? ' p20-rf__room-badge--alt' : '' ) }, [ altBadge || room.label ] );
 
-		var meta = [ room.size_sqm ? room.size_sqm + ' m²' : '', room.capacity_max ? 'bis ' + room.capacity_max + ' Personen' : '' ].filter( Boolean ).join( ' · ' );
+		// Preis, Raumgröße und Kapazität sind die wichtigsten Entscheidungskriterien
+		// und werden deshalb als eigene, ausgeschriebene Werte hervorgehoben.
+		// Die Kapazität ist die allgemeine Raumkapazität, unabhängig von der
+		// gewählten Bestuhlung (die je nach Bestuhlungsart variiert, siehe Detailansicht).
+		var stats = el( 'div', { class: 'p20-rf__room-stats' }, [
+			statBlock( 'Größe', room.size_sqm ? room.size_sqm + ' m²' : '' ),
+			statBlock( 'Kapazität', room.capacity_max ? 'bis ' + room.capacity_max + ' Personen' : '' ),
+			statBlock( 'Preis', room.price_display ),
+		] );
 
 		var tags = el( 'ul', { class: 'p20-rf__room-tags' }, featureNames( room ).slice( 0, 4 ).map( function ( f ) {
 			return el( 'li', {}, [ f ] );
@@ -606,10 +693,9 @@
 			el( 'div', { class: 'p20-rf__room-media' }, [ img, badge ] ),
 			el( 'div', { class: 'p20-rf__room-body' }, [
 				el( 'h3', { class: 'p20-rf__room-name' }, [ room.name ] ),
-				el( 'div', { class: 'p20-rf__room-meta' }, [ meta ] ),
+				stats,
 				el( 'p', { class: 'p20-rf__room-desc' }, [ room.short_desc || '' ] ),
 				tags,
-				el( 'div', { class: 'p20-rf__room-price' }, [ room.price_display ] ),
 				el( 'div', { class: 'p20-rf__room-actions' }, [
 					el( 'button', { class: 'p20-rf-btn p20-rf-btn--outline', onclick: function () { openModal( room ); } }, [ 'Raum ansehen' ] ),
 					el( 'button', { class: 'p20-rf-btn p20-rf-btn--primary', onclick: function () { openRequest( room ); } }, [ 'Unverbindlich anfragen' ] ),
@@ -633,11 +719,7 @@
 				el( 'span', { class: 'p20-rf__kicker' }, [ 'Ergebnis' ] ),
 				el( 'h2', { class: 'p20-rf__headline' }, [ 'Diese Räume passen zu Ihren Plänen.' ] ),
 			] ) );
-			var grid = el( 'div', { class: 'p20-rf__results-grid' } );
-			res.matches.forEach( function ( room ) {
-				grid.appendChild( roomCard( room ) );
-			} );
-			wrap.appendChild( grid );
+			wrap.appendChild( paginatedGrid( res.matches, 'resultsPage' ) );
 		} else {
 			wrap.appendChild( el( 'div', { class: 'p20-rf__empty' }, [
 				el( 'span', { class: 'p20-rf__kicker' }, [ 'Kein exakter Treffer' ] ),
