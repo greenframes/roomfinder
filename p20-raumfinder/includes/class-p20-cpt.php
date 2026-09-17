@@ -13,6 +13,10 @@ class P20_RF_CPT {
 	}
 
 	public function register() {
+		// Matches the 16:10 result-card thumbnail box so the frontend never
+		// has to downscale a full-size image just to show a small card photo.
+		add_image_size( 'p20_rf_card', 480, 300, true );
+
 		$labels = array(
 			'name'               => __( 'Raeume', 'p20-raumfinder' ),
 			'singular_name'      => __( 'Raum', 'p20-raumfinder' ),

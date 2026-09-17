@@ -216,7 +216,10 @@ class P20_RF_REST_API {
 			}
 		}
 
-		$thumb = get_the_post_thumbnail_url( $room_id, 'large' );
+		// Card thumbnails use the dedicated, appropriately small p20_rf_card
+		// size instead of the full "large" image - only the gallery/modal
+		// (further below) needs the bigger version.
+		$thumb = get_the_post_thumbnail_url( $room_id, 'p20_rf_card' );
 
 		$seating_caps = array();
 		foreach ( P20_RF_Data::seating_types() as $key => $label ) {
