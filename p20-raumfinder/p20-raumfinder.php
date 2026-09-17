@@ -3,7 +3,7 @@
  * Plugin Name:       P20 Raumfinder
  * Plugin URI:        https://alte-schraubenfabrik.de/
  * Description:       Interaktiver Raumfinder fuer Tagungs-, Seminar- und Veranstaltungsraeume. Besucher werden per gefuehrtem Wizard zu passenden Raeumen geleitet. Raeume, Ausstattung, Verpflegung und Preise sind vollstaendig im Backend pflegbar.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Die alte Schraubenfabrik
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'P20_RF_VERSION', '1.0.3' );
+define( 'P20_RF_VERSION', '1.0.4' );
 define( 'P20_RF_FILE', __FILE__ );
 define( 'P20_RF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'P20_RF_URL', plugin_dir_url( __FILE__ ) );
@@ -66,6 +66,19 @@ final class P20_Raumfinder {
 		register_deactivation_hook( P20_RF_FILE, array( $this, 'deactivate' ) );
 
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+		add_action( 'init', array( $this, 'maybe_flush_on_upgrade' ), 20 );
+	}
+
+	/**
+	 * Flushes rewrite rules once after an update (e.g. when the room CPT's
+	 * public/rewrite settings change) without requiring a manual
+	 * deactivate/reactivate.
+	 */
+	public function maybe_flush_on_upgrade() {
+		if ( get_option( 'p20_rf_flush_ver' ) !== P20_RF_VERSION ) {
+			flush_rewrite_rules();
+			update_option( 'p20_rf_flush_ver', P20_RF_VERSION );
+		}
 	}
 
 	public function activate() {

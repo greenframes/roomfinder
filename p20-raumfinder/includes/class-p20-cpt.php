@@ -32,13 +32,18 @@ class P20_RF_CPT {
 			P20_RF_CPT,
 			array(
 				'labels'             => $labels,
-				'public'             => true,
-				'publicly_queryable' => true,
+				// Rooms are internal data records managed in the backend and
+				// served to the wizard via the REST API - they intentionally
+				// get no public single page / URL of their own.
+				'public'             => false,
+				'publicly_queryable' => false,
+				'exclude_from_search' => true,
 				'show_ui'            => true,
 				'show_in_menu'       => 'p20-raumfinder',
 				'show_in_rest'       => false,
 				'has_archive'        => false,
-				'rewrite'            => array( 'slug' => 'raum' ),
+				'rewrite'            => false,
+				'query_var'          => false,
 				'capability_type'    => 'post',
 				'hierarchical'       => false,
 				'menu_position'      => 25,
