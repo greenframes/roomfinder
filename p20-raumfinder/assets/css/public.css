@@ -21,6 +21,7 @@
 	--p20-shadow: 0 10px 30px rgba(32, 31, 29, 0.08);
 	--p20-shadow-hover: 0 16px 40px rgba(32, 31, 29, 0.14);
 	--p20-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+	--p20-font-headline: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 	font-family: var(--p20-font);
 	color: var(--p20-text);
 	max-width: 1120px;
@@ -178,8 +179,9 @@
 	margin-bottom: 14px;
 }
 .p20-rf__headline {
-	font-size: clamp(28px, 4vw, 44px);
-	line-height: 1.15;
+	font-family: var(--p20-font-headline);
+	font-size: clamp(32px, 4.5vw, 52px);
+	line-height: 1.12;
 	font-weight: 600;
 	letter-spacing: -0.01em;
 	margin: 0 0 16px;
@@ -296,7 +298,8 @@
 
 /* Step heading */
 .p20-rf__step-title {
-	font-size: clamp(22px, 3vw, 30px);
+	font-family: var(--p20-font-headline);
+	font-size: clamp(24px, 3.2vw, 34px);
 	font-weight: 600;
 	margin: 0 0 8px;
 	color: var(--p20-anthracite);
@@ -327,12 +330,28 @@
 }
 .p20-rf__stepper-btn:hover { background: var(--p20-beige); border-color: var(--p20-anthracite); }
 .p20-rf__stepper-value {
+	font-family: inherit;
 	font-size: 56px;
 	font-weight: 600;
-	min-width: 120px;
+	width: 140px;
 	text-align: center;
 	color: var(--p20-anthracite);
 	font-variant-numeric: tabular-nums;
+	border: none;
+	border-bottom: 2px solid transparent;
+	background: transparent;
+	padding: 0 4px;
+	transition: border-color 0.2s;
+	-moz-appearance: textfield;
+}
+.p20-rf__stepper-value:focus {
+	outline: none;
+	border-bottom-color: var(--p20-green);
+}
+.p20-rf__stepper-value::-webkit-inner-spin-button,
+.p20-rf__stepper-value::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
 }
 .p20-rf__quick-values {
 	display: flex;
@@ -544,7 +563,8 @@
 	flex: 1;
 }
 .p20-rf__room-name {
-	font-size: 20px;
+	font-family: var(--p20-font-headline);
+	font-size: 23px;
 	font-weight: 600;
 	color: var(--p20-anthracite);
 	margin: 0;

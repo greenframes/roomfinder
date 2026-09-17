@@ -11,11 +11,13 @@ class P20_RF_Shortcode {
 	}
 
 	public function register_assets() {
-		wp_register_style( 'p20-rf-public', P20_RF_URL . 'assets/css/public.css', array(), P20_RF_VERSION );
+		wp_register_style( 'p20-rf-fonts', 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap', array(), null );
+		wp_register_style( 'p20-rf-public', P20_RF_URL . 'assets/css/public.css', array( 'p20-rf-fonts' ), P20_RF_VERSION );
 		wp_register_script( 'p20-rf-public', P20_RF_URL . 'assets/js/public-wizard.js', array(), P20_RF_VERSION, true );
 	}
 
 	public function render( $atts ) {
+		wp_enqueue_style( 'p20-rf-fonts' );
 		wp_enqueue_style( 'p20-rf-public' );
 		wp_enqueue_script( 'p20-rf-public' );
 

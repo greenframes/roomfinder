@@ -41,14 +41,18 @@
 		var node = document.createElement( tag );
 		attrs = attrs || {};
 		Object.keys( attrs ).forEach( function ( key ) {
+			var val = attrs[ key ];
+			if ( null === val || 'undefined' === typeof val ) {
+				return;
+			}
 			if ( 'class' === key ) {
-				node.className = attrs[ key ];
+				node.className = val;
 			} else if ( 'html' === key ) {
-				node.innerHTML = attrs[ key ];
-			} else if ( key.indexOf( 'on' ) === 0 && typeof attrs[ key ] === 'function' ) {
-				node.addEventListener( key.slice( 2 ), attrs[ key ] );
+				node.innerHTML = val;
+			} else if ( key.indexOf( 'on' ) === 0 && typeof val === 'function' ) {
+				node.addEventListener( key.slice( 2 ), val );
 			} else {
-				node.setAttribute( key, attrs[ key ] );
+				node.setAttribute( key, val );
 			}
 		} );
 		( children || [] ).forEach( function ( child ) {
@@ -296,9 +300,6 @@
 			disabled: canNext ? null : 'disabled',
 			onclick: onNext,
 		}, [ nextLabel || 'Weiter →' ] );
-		if ( ! canNext ) {
-			nextBtn.setAttribute( 'disabled', 'disabled' );
-		}
 
 		return el( 'div', { class: 'p20-rf__nav' }, [ backBtn, el( 'div', { class: 'p20-rf__nav-spacer' } ), nextBtn ] );
 	}
@@ -340,21 +341,52 @@
 			el( 'p', { class: 'p20-rf__step-sub' }, [ 'Die Anzahl Ihrer Gäste ist die wichtigste Grundlage für die passende Raumauswahl.' ] ),
 		] );
 
-		var value = el( 'div', { class: 'p20-rf__stepper-value' }, [ String( state.persons ) ] );
+		var value = el( 'input', {
+			type: 'number',
+			inputmode: 'numeric',
+			min: '1',
+			step: '1',
+			class: 'p20-rf__stepper-value',
+			value: String( state.persons ),
+			'aria-label': 'Personenzahl',
+		} );
 
-		var minus = el( 'button', { class: 'p20-rf__stepper-btn', 'aria-label': 'Weniger', onclick: function () {
-			state.persons = Math.max( 1, state.persons - 1 );
-			value.textContent = String( state.persons );
+		var navEl = nav( state.persons > 0, goNext );
+		var nextBtn = navEl.querySelector( '.p20-rf-btn--primary' );
+
+		function setPersons( n ) {
+			state.persons = n;
+			value.value = n > 0 ? String( n ) : '';
+			if ( nextBtn ) {
+				nextBtn.disabled = ! ( n > 0 );
+			}
 			syncQuick();
+		}
+
+		value.addEventListener( 'input', function () {
+			var v = parseInt( value.value, 10 );
+			state.persons = ( ! isNaN( v ) && v > 0 ) ? v : 0;
+			if ( nextBtn ) {
+				nextBtn.disabled = ! ( state.persons > 0 );
+			}
+			syncQuick();
+		} );
+		value.addEventListener( 'blur', function () {
+			if ( ! ( state.persons > 0 ) ) {
+				setPersons( 1 );
+			}
+		} );
+
+		var minus = el( 'button', { class: 'p20-rf__stepper-btn', type: 'button', 'aria-label': 'Weniger', onclick: function () {
+			setPersons( Math.max( 1, ( state.persons || 1 ) - 1 ) );
 		} }, [ '−' ] );
 
-		var plus = el( 'button', { class: 'p20-rf__stepper-btn', 'aria-label': 'Mehr', onclick: function () {
-			state.persons = state.persons + 1;
-			value.textContent = String( state.persons );
-			syncQuick();
-		} } ,[ '+' ] );
+		var plus = el( 'button', { class: 'p20-rf__stepper-btn', type: 'button', 'aria-label': 'Mehr', onclick: function () {
+			setPersons( ( state.persons || 0 ) + 1 );
+		} }, [ '+' ] );
 
 		frag.appendChild( el( 'div', { class: 'p20-rf__stepper' }, [ minus, value, plus ] ) );
+		frag.appendChild( el( 'p', { class: 'p20-rf__hint', style: 'margin:-8px 0 20px' }, [ 'Sie können die Personenzahl auch direkt eingeben, z. B. 12, 45 oder 69.' ] ) );
 
 		var quickWrap = el( 'div', { class: 'p20-rf__quick-values' } );
 		function syncQuick() {
@@ -363,16 +395,14 @@
 			} );
 		}
 		[ 2, 10, 20, 30, 50, 80 ].forEach( function ( n ) {
-			var btn = el( 'button', { 'data-val': n, onclick: function () {
-				state.persons = n;
-				value.textContent = String( state.persons );
-				syncQuick();
+			var btn = el( 'button', { type: 'button', 'data-val': n, onclick: function () {
+				setPersons( n );
 			} }, [ n === 80 ? '80+' : String( n ) ] );
 			quickWrap.appendChild( btn );
 		} );
 		syncQuick();
 		frag.appendChild( quickWrap );
-		frag.appendChild( nav( state.persons > 0, goNext ) );
+		frag.appendChild( navEl );
 		return frag;
 	}
 
