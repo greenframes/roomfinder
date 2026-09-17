@@ -685,7 +685,7 @@
 			statBlock( 'Preis', room.price_display ),
 		] );
 
-		var tags = el( 'ul', { class: 'p20-rf__room-tags' }, featureNames( room ).slice( 0, 4 ).map( function ( f ) {
+		var tags = el( 'ul', { class: 'p20-rf__room-tags' }, featureNames( room ).slice( 0, 3 ).map( function ( f ) {
 			return el( 'li', {}, [ f ] );
 		} ) );
 
