@@ -64,7 +64,22 @@ class P20_RF_Data {
 }
 
 /**
+ * Decodes HTML entities (WordPress commonly stores term/post text with
+ * entity-encoded characters, e.g. "&amp;"). Needed for any text sent
+ * through the REST API as JSON, since the frontend inserts it via
+ * textContent, not innerHTML, so raw entities would show up literally.
+ */
+function p20_rf_text( $value ) {
+	if ( '' === $value || null === $value ) {
+		return $value;
+	}
+	return wp_specialchars_decode( (string) $value, ENT_QUOTES );
+}
+
+/**
  * Small formatting helper for price display, never a binding final price.
+ * Uses the real UTF-8 Euro sign, not an HTML entity, since this value is
+ * sent through the REST API as JSON and rendered via textContent.
  */
 function p20_rf_format_price( $value ) {
 	$value = trim( (string) $value );
@@ -72,9 +87,9 @@ function p20_rf_format_price( $value ) {
 		return '';
 	}
 	if ( is_numeric( $value ) ) {
-		return 'ab ' . number_format_i18n( (float) $value, 0 ) . ' &euro;';
+		return 'ab ' . number_format_i18n( (float) $value, 0 ) . ' €';
 	}
-	return esc_html( $value );
+	return p20_rf_text( $value );
 }
 
 function p20_rf_get_template( $name, $args = array() ) {

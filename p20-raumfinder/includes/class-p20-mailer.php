@@ -12,7 +12,7 @@ class P20_RF_Mailer {
 	public static function send_inquiry( $room_id, $contact, $criteria ) {
 		$settings   = P20_RF_Settings::get_settings();
 		$to         = ! empty( $settings['notification_email'] ) ? $settings['notification_email'] : get_option( 'admin_email' );
-		$room_name  = $room_id ? get_the_title( $room_id ) : __( 'Individuelle Anfrage', 'p20-raumfinder' );
+		$room_name  = $room_id ? p20_rf_text( get_the_title( $room_id ) ) : __( 'Individuelle Anfrage', 'p20-raumfinder' );
 		$site_name  = get_bloginfo( 'name' );
 
 		$subject = sprintf( '[%s] %s: %s', $site_name, __( 'Neue Raumanfrage', 'p20-raumfinder' ), $room_name );

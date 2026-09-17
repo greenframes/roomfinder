@@ -93,7 +93,7 @@ class P20_RF_REST_API {
 			}
 			$features[] = array(
 				'id'   => $term->term_id,
-				'name' => $term->name,
+				'name' => p20_rf_text( $term->name ),
 				'slug' => $term->slug,
 			);
 		}
@@ -102,7 +102,7 @@ class P20_RF_REST_API {
 		foreach ( (array) $catering_terms as $term ) {
 			$catering[] = array(
 				'id'   => $term->term_id,
-				'name' => $term->name,
+				'name' => p20_rf_text( $term->name ),
 				'slug' => $term->slug,
 			);
 		}
@@ -111,7 +111,7 @@ class P20_RF_REST_API {
 		foreach ( (array) $event_terms as $term ) {
 			$events[] = array(
 				'id'   => $term->term_id,
-				'name' => $term->name,
+				'name' => p20_rf_text( $term->name ),
 				'slug' => $term->slug,
 			);
 		}
@@ -124,9 +124,9 @@ class P20_RF_REST_API {
 				'seating_types' => P20_RF_Data::seating_types(),
 				'durations'     => P20_RF_Data::durations(),
 				'settings'      => array(
-					'intro_headline' => $settings['intro_headline'],
-					'intro_subline'  => $settings['intro_subline'],
-					'privacy_text'   => $settings['privacy_text'],
+					'intro_headline' => p20_rf_text( $settings['intro_headline'] ),
+					'intro_subline'  => p20_rf_text( $settings['intro_subline'] ),
+					'privacy_text'   => p20_rf_text( $settings['privacy_text'] ),
 					'privacy_url'    => $settings['privacy_url'],
 				),
 			)
@@ -239,23 +239,23 @@ class P20_RF_REST_API {
 				continue;
 			}
 			$features[] = array(
-				'name'  => $term->name,
+				'name'  => p20_rf_text( $term->name ),
 				'state' => $state,
 			);
 		}
 
 		$catering_terms = wp_get_object_terms( $room_id, P20_RF_TAX_CATERING, array( 'fields' => 'names' ) );
-		$catering_terms = is_wp_error( $catering_terms ) ? array() : $catering_terms;
+		$catering_terms = is_wp_error( $catering_terms ) ? array() : array_map( 'p20_rf_text', $catering_terms );
 
 		$event_terms = wp_get_object_terms( $room_id, P20_RF_TAX_EVENT, array( 'fields' => 'names' ) );
-		$event_terms = is_wp_error( $event_terms ) ? array() : $event_terms;
+		$event_terms = is_wp_error( $event_terms ) ? array() : array_map( 'p20_rf_text', $event_terms );
 
 		$on_request = '1' === get_post_meta( $room_id, 'p20_price_on_request', true );
 		$prices     = array(
 			'2h'       => get_post_meta( $room_id, 'p20_price_2h', true ),
 			'4h'       => get_post_meta( $room_id, 'p20_price_4h', true ),
 			'ganztags' => get_post_meta( $room_id, 'p20_price_fullday', true ),
-			'individual' => get_post_meta( $room_id, 'p20_price_individual', true ),
+			'individual' => p20_rf_text( get_post_meta( $room_id, 'p20_price_individual', true ) ),
 			'on_request' => $on_request,
 		);
 
@@ -267,15 +267,15 @@ class P20_RF_REST_API {
 		} elseif ( '' !== $prices['4h'] ) {
 			$display_price = p20_rf_format_price( $prices['4h'] ) . ' / 4 ' . __( 'Stunden', 'p20-raumfinder' );
 		} elseif ( $prices['individual'] ) {
-			$display_price = esc_html( $prices['individual'] );
+			$display_price = p20_rf_text( $prices['individual'] );
 		} else {
 			$display_price = __( 'Preis auf Anfrage', 'p20-raumfinder' );
 		}
 
 		$data = array(
 			'id'             => $room_id,
-			'name'           => get_the_title( $room_id ),
-			'short_desc'     => get_post_meta( $room_id, 'p20_short_desc', true ),
+			'name'           => p20_rf_text( get_the_title( $room_id ) ),
+			'short_desc'     => p20_rf_text( get_post_meta( $room_id, 'p20_short_desc', true ) ),
 			'size_sqm'       => get_post_meta( $room_id, 'p20_size_sqm', true ),
 			'capacity_min'   => get_post_meta( $room_id, 'p20_capacity_min', true ),
 			'capacity_max'   => get_post_meta( $room_id, 'p20_capacity_max', true ),
