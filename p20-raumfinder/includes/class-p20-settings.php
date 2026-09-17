@@ -20,6 +20,8 @@ class P20_RF_Settings {
 			'privacy_text'        => __( 'Ich habe die Datenschutzerklaerung gelesen und bin mit der Verarbeitung meiner Daten zur Bearbeitung meiner Anfrage einverstanden.', 'p20-raumfinder' ),
 			'privacy_url'         => '',
 			'active_features'     => array(),
+			'confirmation_subject' => __( '{webseite}: Ihre Anfrage ist eingegangen', 'p20-raumfinder' ),
+			'confirmation_message' => __( "Hallo {vorname},\n\nvielen Dank fuer Ihre Anfrage. Wir pruefen Ihre Angaben und melden uns in Kuerze mit einem passenden Angebot.\n\nDies ist noch keine verbindliche Buchung.\n\nViele Gruesse\n{webseite}", 'p20-raumfinder' ),
 		);
 	}
 
@@ -53,6 +55,8 @@ class P20_RF_Settings {
 		$output['privacy_text']       = sanitize_textarea_field( $input['privacy_text'] ?? $defaults['privacy_text'] );
 		$output['privacy_url']        = esc_url_raw( $input['privacy_url'] ?? '' );
 		$output['active_features']    = isset( $input['active_features'] ) && is_array( $input['active_features'] ) ? array_map( 'absint', $input['active_features'] ) : array();
+		$output['confirmation_subject'] = sanitize_text_field( $input['confirmation_subject'] ?? $defaults['confirmation_subject'] );
+		$output['confirmation_message'] = sanitize_textarea_field( $input['confirmation_message'] ?? $defaults['confirmation_message'] );
 
 		return $output;
 	}
@@ -89,6 +93,17 @@ class P20_RF_Settings {
 					<tr>
 						<th><label for="privacy_url"><?php esc_html_e( 'Link zur Datenschutzerklaerung', 'p20-raumfinder' ); ?></label></th>
 						<td><input type="url" class="large-text" id="privacy_url" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[privacy_url]" value="<?php echo esc_attr( $settings['privacy_url'] ); ?>" placeholder="https://alte-schraubenfabrik.de/datenschutz/"></td>
+					</tr>
+					<tr>
+						<th><label for="confirmation_subject"><?php esc_html_e( 'Bestaetigungs-E-Mail: Betreff', 'p20-raumfinder' ); ?></label></th>
+						<td><input type="text" class="large-text" id="confirmation_subject" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[confirmation_subject]" value="<?php echo esc_attr( $settings['confirmation_subject'] ); ?>"></td>
+					</tr>
+					<tr>
+						<th><label for="confirmation_message"><?php esc_html_e( 'Bestaetigungs-E-Mail: Text', 'p20-raumfinder' ); ?></label></th>
+						<td>
+							<textarea class="large-text" rows="8" id="confirmation_message" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[confirmation_message]"><?php echo esc_textarea( $settings['confirmation_message'] ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'Diese Nachricht erhaelt der Kunde automatisch direkt nach dem Absenden einer Anfrage. Verfuegbare Platzhalter:', 'p20-raumfinder' ); ?> <code>{vorname}</code> <code>{nachname}</code> <code>{raum}</code> <code>{webseite}</code></p>
+						</td>
 					</tr>
 					<tr>
 						<th><?php esc_html_e( 'Technik-Optionen im Raumfinder', 'p20-raumfinder' ); ?></th>

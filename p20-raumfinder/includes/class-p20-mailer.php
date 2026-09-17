@@ -70,13 +70,16 @@ class P20_RF_Mailer {
 		$sent = wp_mail( $to, $subject, $body, $headers );
 
 		if ( $sent && is_email( $contact['email'] ) ) {
-			$confirm_subject = sprintf( '%s: %s', $site_name, __( 'Ihre Anfrage ist eingegangen', 'p20-raumfinder' ) );
-			$confirm_body     = sprintf(
-				/* translators: %s: first name */
-				__( "Hallo %s,\n\nvielen Dank fuer Ihre Anfrage. Wir pruefen Ihre Angaben und melden uns in Kuerze mit einem passenden Angebot.\n\nDies ist noch keine verbindliche Buchung.\n\nViele Gruesse\n%s", 'p20-raumfinder' ),
-				$contact['first_name'],
-				$site_name
+			$placeholders = array(
+				'{vorname}'  => $contact['first_name'],
+				'{nachname}' => $contact['last_name'],
+				'{raum}'     => $room_name,
+				'{webseite}' => $site_name,
 			);
+
+			$confirm_subject = strtr( $settings['confirmation_subject'], $placeholders );
+			$confirm_body    = strtr( $settings['confirmation_message'], $placeholders );
+
 			wp_mail( $contact['email'], $confirm_subject, $confirm_body );
 		}
 
